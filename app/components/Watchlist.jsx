@@ -59,14 +59,36 @@ const style = `
     margin-bottom: 56px;
   }
 
-  .search-input {
+  .search-input-wrap {
+    position: relative;
     flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-clear {
+    position: absolute;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: #555;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 4px;
+    transition: color 0.2s;
+  }
+
+  .search-clear:hover { color: #ccc; }
+
+  .search-input {
+    width: 100%;
     background: #161618;
     border: 1px solid #2a2a2e;
     color: #e8e2d5;
     font-family: 'DM Sans', sans-serif;
     font-size: 15px;
-    padding: 14px 20px;
+    padding: 14px 40px 14px 20px;
     border-radius: 4px;
     outline: none;
     transition: border-color 0.2s;
@@ -95,10 +117,6 @@ const style = `
   .search-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
   /* SEARCH AUTOCOMPLETE */
-  .search-wrap {
-    position: relative;
-  }
-
   .search-results {
     position: absolute;
     top: 100%;
@@ -681,6 +699,79 @@ const style = `
     line-height: 1.5;
   }
 
+  /* CONFIRM MODAL */
+  .confirm-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(3px);
+  }
+
+  .confirm-box {
+    background: #141416;
+    border: 1px solid #2a2a2e;
+    border-radius: 6px;
+    padding: 32px 28px 24px;
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .confirm-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .confirm-sub {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  .confirm-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .confirm-cancel {
+    background: transparent;
+    border: 1px solid #333;
+    color: #888;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 10px 22px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .confirm-cancel:hover { border-color: #555; color: #ccc; }
+
+  .confirm-remove {
+    background: #7a2020;
+    border: none;
+    color: #f4a0a0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 22px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .confirm-remove:hover { background: #922626; }
+
   /* EMPTY STATE */
   .empty {
     text-align: center;
@@ -745,6 +836,10 @@ export default function App() {
 	const [contributors, setContributors] = useState([]);
 	const [newName, setNewName] = useState("");
 	const [loading, setLoading] = useState(true);
+	const [mounted, setMounted] = useState(false);
+	const [confirmRemove, setConfirmRemove] = useState(null); // movie object to remove
+
+	useEffect(() => { setMounted(true); }, []);
 
 	// Load watchlist — Sheets first, localStorage fallback
 	useEffect(() => {
@@ -912,6 +1007,8 @@ export default function App() {
 		unwatched: watchlist.filter(m => !m.watched).length,
 	};
 
+	if (!mounted) return null;
+
 	return (
 		<>
 			<style>{style}</style>
@@ -940,39 +1037,47 @@ export default function App() {
 
 				{/* Search */}
 				<div className="search-wrap">
-					<input
-						className="search-input"
-						type="text"
-						placeholder="Search for a movie to add…"
-						value={query}
-						onChange={e => setQuery(e.target.value)}
-						onKeyDown={e => e.key === "Enter" && doSearch(query)}
-					/>
+					<div className="search-input-wrap">
+						<input
+							className="search-input"
+							type="text"
+							placeholder="Search for a movie to add…"
+							value={query}
+							onChange={e => setQuery(e.target.value)}
+							onKeyDown={e => {
+								if (e.key === "Enter") doSearch(query);
+								if (e.key === "Escape") { setQuery(""); setSearchResults([]); }
+							}}
+						/>
+						{(query || searchResults.length > 0) && (
+							<button className="search-clear" onClick={() => { setQuery(""); setSearchResults([]); }} aria-label="Clear search">×</button>
+						)}
+						{searchResults.length > 0 && (
+							<div className="search-results">
+								<div className="results-list">
+									{searchResults.map(r => (
+										<div className="result-item" key={r.imdbID} onClick={() => addMovie(r.imdbID)}>
+											{r.Poster && r.Poster !== "N/A"
+												? <img className="result-thumb" src={r.Poster} alt=""
+														onError={e => { e.currentTarget.replaceWith(Object.assign(document.createElement("div"), { className: "result-thumb result-thumb-fallback" })); }}
+													/>
+												: <div className="result-thumb result-thumb-fallback" />}
+											<div className="result-info">
+												<div className="result-title">{r.Title}</div>
+												<div className="result-year">{r.Year}</div>
+											</div>
+											<span className="result-add">
+												{watchlist.find(m => m.imdbID === r.imdbID) ? "Added ✓" : "+ Add"}
+											</span>
+										</div>
+									))}
+								</div>
+							</div>
+						)}
+					</div>
 					<button className="search-btn" onClick={() => doSearch(query)} disabled={searching}>
 						{searching ? <span className="spinner" /> : "Search"}
 					</button>
-					{searchResults.length > 0 && (
-						<div className="search-results">
-							<div className="results-list">
-								{searchResults.map(r => (
-									<div className="result-item" key={r.imdbID} onClick={() => addMovie(r.imdbID)}>
-										{r.Poster && r.Poster !== "N/A"
-											? <img className="result-thumb" src={r.Poster} alt=""
-													onError={e => { e.currentTarget.replaceWith(Object.assign(document.createElement("div"), { className: "result-thumb result-thumb-fallback" })); }}
-												/>
-											: <div className="result-thumb result-thumb-fallback" />}
-										<div className="result-info">
-											<div className="result-title">{r.Title}</div>
-											<div className="result-year">{r.Year}</div>
-										</div>
-										<span className="result-add">
-											{watchlist.find(m => m.imdbID === r.imdbID) ? "Added ✓" : "+ Add"}
-										</span>
-									</div>
-								))}
-							</div>
-						</div>
-					)}
 				</div>
 
 				{/* Filters */}
@@ -1027,7 +1132,7 @@ export default function App() {
 									</div>
 									<button
 										className="card-remove-btn"
-										onClick={e => { e.stopPropagation(); removeMovie(movie.imdbID); }}
+										onClick={e => { e.stopPropagation(); setConfirmRemove(movie); }}
 										title="Remove"
 									>×</button>
 								</div>
@@ -1073,7 +1178,7 @@ export default function App() {
 									</button>
 									<button
 										style={{ background: "transparent", border: "1px solid #333", color: "#888", fontFamily: "'DM Sans',sans-serif", fontSize: "13px", padding: "10px 22px", borderRadius: "3px", cursor: "pointer" }}
-										onClick={() => removeMovie(modal.imdbID)}
+										onClick={() => setConfirmRemove(modal)}
 									>
 										Remove
 									</button>
@@ -1084,6 +1189,22 @@ export default function App() {
 					</div>
 				)}
 			</div>
+
+			{/* Confirm remove modal */}
+			{confirmRemove && (
+				<div className="confirm-bg" onClick={() => setConfirmRemove(null)}>
+					<div className="confirm-box" onClick={e => e.stopPropagation()}>
+						<div className="confirm-title">Remove film?</div>
+						<div className="confirm-sub">
+							<em>{confirmRemove.Title}</em> will be removed from your watchlist.
+						</div>
+						<div className="confirm-actions">
+							<button className="confirm-cancel" onClick={() => setConfirmRemove(null)}>Cancel</button>
+							<button className="confirm-remove" onClick={() => { removeMovie(confirmRemove.imdbID); setConfirmRemove(null); }}>Remove</button>
+						</div>
+					</div>
+				</div>
+			)}
 
 			{/* Settings overlay */}
 			<div className={`settings-overlay ${settingsOpen ? "open" : ""}`} onClick={() => setSettingsOpen(false)} />
