@@ -1221,9 +1221,10 @@ export default function App() {
 		return true;
 	});
 
-	const displayed = viewMode === "list"
-		? [...filtered].sort((a, b) => a.Title.localeCompare(b.Title))
-		: filtered;
+	const displayed = [...filtered].sort((a, b) => {
+		if (a.watched !== b.watched) return a.watched ? 1 : -1;
+		return a.Title.localeCompare(b.Title);
+	});
 
 	const counts = {
 		all: watchlist.length,
