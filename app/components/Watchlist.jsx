@@ -238,6 +238,15 @@ const style = `
     gap: 28px;
   }
 
+  @media (max-width: 600px) {
+    .grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .card-title { font-size: 12px; }
+    .card-year  { font-size: 11px; }
+  }
+
   /* CARD */
   .card {
     position: relative;
@@ -808,10 +817,203 @@ const style = `
   ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
   html { overflow-y: scroll; }
 
+  /* VIEW TOGGLE */
+  .view-toggle {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+  }
+
+  .view-btn {
+    background: transparent;
+    border: 1px solid #2a2a2e;
+    color: #555;
+    width: 32px;
+    height: 32px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+
+  .view-btn.active {
+    background: #1e1e22;
+    border-color: #c9a84c;
+    color: #c9a84c;
+  }
+
+  .view-btn:hover:not(.active) { border-color: #444; color: #bbb; }
+
+  /* LIST VIEW */
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+  }
+
+  .list-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid #1a1a1e;
+    border-left: 3px solid transparent;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .list-row.watched-row { border-left-color: #2a5c3f; }
+  .list-row:hover { background: #161618; }
+
+  .list-row.watched-row .list-title {
+    color: #888;
+  }
+
+  .list-thumb {
+    width: 32px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 2px;
+    background: #1e1e22;
+    flex-shrink: 0;
+  }
+
+  .list-thumb-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1e1e22;
+    border: 1px solid #2a2a2e;
+    color: #333;
+  }
+
+  .list-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    color: #e8e2d5;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .list-year {
+    font-size: 12px;
+    color: #555;
+    flex-shrink: 0;
+    width: 44px;
+  }
+
+  .list-rating {
+    font-size: 12px;
+    color: #c9a84c;
+    flex-shrink: 0;
+    width: 44px;
+  }
+
+  .list-watched-badge {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6fcf97;
+    background: #2a5c3f;
+    padding: 3px 7px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .list-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .list-row:hover .list-actions { opacity: 1; }
+
+  .list-action-btn {
+    background: transparent;
+    border: 1px solid #2a2a2e;
+    color: #666;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .list-action-btn:hover { color: #c9a84c; border-color: #c9a84c; }
+  .list-action-btn.remove:hover { color: #e05c5c; border-color: #e05c5c; }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 80px;
+    padding: 28px 0 32px;
+    border-top: 1px solid #1a1a1e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .footer-copy {
+    font-size: 12px;
+    color: #333;
+    letter-spacing: 0.04em;
+  }
+
+  .footer-link {
+    font-size: 12px;
+    color: #555;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s;
+    letter-spacing: 0.04em;
+  }
+
+  .footer-link:hover { color: #c9a84c; }
+
+  /* BACK TO TOP */
+  .back-to-top {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    width: 40px;
+    height: 40px;
+    background: #1e1e22;
+    border: 1px solid #2a2a2e;
+    color: #888;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 50;
+    transition: opacity 0.3s, transform 0.3s, color 0.2s, border-color 0.2s;
+  }
+
+  .back-to-top.hidden { opacity: 0; transform: translateY(12px); pointer-events: none; }
+  .back-to-top:hover { color: #c9a84c; border-color: #c9a84c; }
+
   @media (max-width: 600px) {
     .modal { flex-direction: column; }
     .modal-poster, .modal-no-poster { width: 100%; height: 280px; border-radius: 6px 6px 0 0; }
     .search-btn { padding: 14px 18px; }
+    .back-to-top { bottom: 20px; right: 20px; }
+    .list-rating, .list-watched-badge, .list-actions { display: none; }
   }
 `;
 
@@ -837,9 +1039,17 @@ export default function App() {
 	const [newName, setNewName] = useState("");
 	const [loading, setLoading] = useState(true);
 	const [mounted, setMounted] = useState(false);
-	const [confirmRemove, setConfirmRemove] = useState(null); // movie object to remove
+	const [confirmRemove, setConfirmRemove] = useState(null);
+	const [viewMode, setViewMode] = useState("grid"); // "grid" | "list"
+	const [showTop, setShowTop] = useState(false);
 
 	useEffect(() => { setMounted(true); }, []);
+
+	useEffect(() => {
+		const onScroll = () => setShowTop(window.scrollY > 400);
+		window.addEventListener("scroll", onScroll, { passive: true });
+		return () => window.removeEventListener("scroll", onScroll);
+	}, []);
 
 	// Load watchlist — Sheets first, localStorage fallback
 	useEffect(() => {
@@ -1001,6 +1211,10 @@ export default function App() {
 		return true;
 	});
 
+	const displayed = viewMode === "list"
+		? [...filtered].sort((a, b) => a.Title.localeCompare(b.Title))
+		: filtered;
+
 	const counts = {
 		all: watchlist.length,
 		watched: watchlist.filter(m => m.watched).length,
@@ -1092,10 +1306,18 @@ export default function App() {
 								{f === "all" ? `All (${counts.all})` : f === "watched" ? `Watched (${counts.watched})` : `To Watch (${counts.unwatched})`}
 							</button>
 						))}
+						<div className="view-toggle">
+							<button className={`view-btn ${viewMode === "grid" ? "active" : ""}`} onClick={() => setViewMode("grid")} title="Grid view" aria-label="Grid view">
+								<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="0" y="0" width="6" height="6" rx="1"/><rect x="8" y="0" width="6" height="6" rx="1"/><rect x="0" y="8" width="6" height="6" rx="1"/><rect x="8" y="8" width="6" height="6" rx="1"/></svg>
+							</button>
+							<button className={`view-btn ${viewMode === "list" ? "active" : ""}`} onClick={() => setViewMode("list")} title="List view" aria-label="List view">
+								<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="0" y="1" width="14" height="2" rx="1"/><rect x="0" y="6" width="14" height="2" rx="1"/><rect x="0" y="11" width="14" height="2" rx="1"/></svg>
+							</button>
+						</div>
 					</div>
 				)}
 
-				{/* Grid */}
+				{/* Grid / List */}
 				{loading ? (
 					<div className="empty">
 						<div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
@@ -1109,9 +1331,9 @@ export default function App() {
 						<div className="empty-title">{watchlist.length === 0 ? "Your watchlist is empty" : "Nothing here yet"}</div>
 						<div className="empty-sub">{watchlist.length === 0 ? "Search for a film above to get started" : "Try a different filter"}</div>
 					</div>
-				) : (
+				) : viewMode === "grid" ? (
 					<div className="grid">
-						{filtered.map(movie => (
+						{displayed.map(movie => (
 							<div className="card" key={movie.imdbID} onClick={() => setModal(movie)}>
 								<div className="card-poster-wrap">
 									{movie.Poster && movie.Poster !== "N/A"
@@ -1139,6 +1361,31 @@ export default function App() {
 								<div className="card-info">
 									<div className="card-title">{movie.Title}</div>
 									<div className="card-year">{movie.Year}</div>
+								</div>
+							</div>
+						))}
+					</div>
+				) : (
+					<div className="list">
+						{displayed.map(movie => (
+							<div className={`list-row ${movie.watched ? "watched-row" : ""}`} key={movie.imdbID} onClick={() => setModal(movie)}>
+								{movie.Poster && movie.Poster !== "N/A"
+									? <img className="list-thumb" src={movie.Poster} alt="" />
+									: <div className="list-thumb list-thumb-fallback">
+										<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+									</div>
+								}
+								<div className="list-title">{movie.Title}</div>
+								<div className="list-year">{movie.Year}</div>
+								{movie.imdbRating && movie.imdbRating !== "N/A" && (
+									<div className="list-rating">★ {movie.imdbRating}</div>
+								)}
+								{movie.watched && <div className="list-watched-badge">Watched</div>}
+								<div className="list-actions" onClick={e => e.stopPropagation()}>
+									<button className="list-action-btn" onClick={() => toggleWatched(movie.imdbID)}>
+										{movie.watched ? "Unwatch" : "Watched"}
+									</button>
+									<button className="list-action-btn remove" onClick={() => setConfirmRemove(movie)}>Remove</button>
 								</div>
 							</div>
 						))}
@@ -1188,6 +1435,13 @@ export default function App() {
 						</div>
 					</div>
 				)}
+				<footer className="footer">
+					<span className="footer-copy">© {new Date().getFullYear()} Movies Watchlist</span>
+					<a className="footer-link" href="https://github.com/romayneeastmond/movies-list-nextjs-vite-demo" target="_blank" rel="noopener noreferrer">
+						<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+						Source on GitHub
+					</a>
+				</footer>
 			</div>
 
 			{/* Confirm remove modal */}
@@ -1205,6 +1459,15 @@ export default function App() {
 					</div>
 				</div>
 			)}
+
+			{/* Back to top */}
+			<button
+				className={`back-to-top ${showTop ? "" : "hidden"}`}
+				onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+				aria-label="Back to top"
+			>
+				<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9l5-5 5 5"/></svg>
+			</button>
 
 			{/* Settings overlay */}
 			<div className={`settings-overlay ${settingsOpen ? "open" : ""}`} onClick={() => setSettingsOpen(false)} />
