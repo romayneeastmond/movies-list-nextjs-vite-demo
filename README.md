@@ -1,17 +1,17 @@
-# Movies Watchlist
+# 🎬 Movies Watchlist
 
 A dark, cinematic movie watchlist app built with Next.js. Search for films, track what you want to watch, and mark them as watched.
 
-## Features
+## ✨ Features
 
 - **Movie search** — autocomplete dropdown powered by OMDB and TMDB APIs, overlays the page without pushing content down
 - **Detail modal** — poster, synopsis, runtime, director, and IMDb rating for every film
 - **Watch status** — mark films watched/unwatched; watched films sort to the bottom
 - **Filters** — view All, To Watch, or Watched
-- **Named contributors** — add names to personalise the list title (e.g. "Elizabeth & Romayne's Watchlist")
+- **Named contributors** — add names to personalise the list title (e.g. "Adam & Eve's Watchlist")
 - **Persistent** — watchlist and contributors saved in localStorage
 
-## Getting Started
+## 🚀 Getting Started
 
 ```bash
 npm install
@@ -20,7 +20,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Environment Variables
+## 🔑 Environment Variables
 
 Create a `.env.local` file in the project root:
 
@@ -34,9 +34,16 @@ TMDB_KEY=your_tmdb_key
 
 Keys are read server-side via the Next.js API routes and are never exposed to the client.
 
-## Deploying to Vercel
+## 🌐 Deploying to Vercel
 
 1. Push the repo to GitHub
 2. Import the project at [vercel.com/new](https://vercel.com/new)
 3. Add `OMDB_KEY` and `TMDB_KEY` under **Settings → Environment Variables**
 4. Deploy
+
+## 📄 License
+
+This project is open-source and available under the **MIT License**. Feel free to use, modify, and distribute it as you see fit.
+
+---
+*Created for portfolio demonstration purposes.*
