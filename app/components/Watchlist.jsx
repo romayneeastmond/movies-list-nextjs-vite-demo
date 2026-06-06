@@ -498,9 +498,9 @@ const style = `
     position: absolute;
     top: 16px;
     right: 16px;
-    background: transparent;
-    border: 1px solid #333;
-    color: #888;
+    background: #141416;
+    border: 1px solid #444;
+    color: #aaa;
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -893,11 +893,18 @@ const style = `
     color: #333;
   }
 
+  .list-title-col {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .list-title {
     font-family: 'Playfair Display', serif;
     font-size: 15px;
     color: #e8e2d5;
-    flex: 1;
     min-width: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -927,17 +934,14 @@ const style = `
     padding: 3px 7px;
     border-radius: 2px;
     flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .list-actions {
     display: flex;
     gap: 6px;
     flex-shrink: 0;
-    opacity: 0;
-    transition: opacity 0.2s;
   }
-
-  .list-row:hover .list-actions { opacity: 1; }
 
   .list-action-btn {
     background: transparent;
@@ -1013,7 +1017,13 @@ const style = `
     .modal-poster, .modal-no-poster { width: 100%; height: 280px; border-radius: 6px 6px 0 0; }
     .search-btn { padding: 14px 18px; }
     .back-to-top { bottom: 20px; right: 20px; }
-    .list-rating, .list-watched-badge, .list-actions { display: none; }
+    .list-rating { display: none; }
+    .list-watched-badge { display: none; }
+    .list-actions { display: none; }
+  }
+
+  @media (hover: none) {
+    .card-remove-btn { opacity: 1; }
   }
 `;
 
@@ -1375,12 +1385,14 @@ export default function App() {
 										<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
 									</div>
 								}
-								<div className="list-title">{movie.Title}</div>
+								<div className="list-title-col">
+									<div className="list-title">{movie.Title}</div>
+									{movie.watched && <div className="list-watched-badge">Watched</div>}
+								</div>
 								<div className="list-year">{movie.Year}</div>
-								{movie.imdbRating && movie.imdbRating !== "N/A" && (
-									<div className="list-rating">★ {movie.imdbRating}</div>
-								)}
-								{movie.watched && <div className="list-watched-badge">Watched</div>}
+								<div className="list-rating">
+									{movie.imdbRating && movie.imdbRating !== "N/A" ? `★ ${movie.imdbRating}` : " "}
+								</div>
 								<div className="list-actions" onClick={e => e.stopPropagation()}>
 									<button className="list-action-btn" onClick={() => toggleWatched(movie.imdbID)}>
 										{movie.watched ? "Unwatch" : "Watched"}
