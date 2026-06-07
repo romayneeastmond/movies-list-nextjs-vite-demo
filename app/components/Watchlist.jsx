@@ -326,6 +326,28 @@ const style = `
     color: #6fcf97;
   }
 
+  .card-torrent-btn {
+    display: block;
+    background: #1a1a2e;
+    color: #7eb8f7;
+    border: 1px solid #2a3a5c;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+    transition: background 0.2s;
+    margin-top: 6px;
+  }
+  .card-torrent-btn:hover { background: #243050; }
+
   .card-remove-btn {
     position: absolute;
     top: 10px;
@@ -493,6 +515,23 @@ const style = `
     background: #2a5c3f;
     color: #6fcf97;
   }
+
+  .modal-torrent-btn {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #7eb8f7;
+    border: 1px solid #2a3a5c;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    padding: 10px 22px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .modal-torrent-btn:hover { background: #243050; }
 
   .modal-close {
     position: absolute;
@@ -953,6 +992,7 @@ const style = `
     border-radius: 2px;
     cursor: pointer;
     white-space: nowrap;
+    text-decoration: none;
     transition: color 0.2s, border-color 0.2s;
   }
 
@@ -1052,8 +1092,13 @@ export default function App() {
 	const [confirmRemove, setConfirmRemove] = useState(null);
 	const [viewMode, setViewMode] = useState("grid"); // "grid" | "list"
 	const [showTop, setShowTop] = useState(false);
+	const [torrentsEnabled, setTorrentsEnabled] = useState(false);
 
 	useEffect(() => { setMounted(true); }, []);
+
+	useEffect(() => {
+		fetch("/api/config").then(r => r.json()).then(d => setTorrentsEnabled(d.enableTorrents));
+	}, []);
 
 	useEffect(() => {
 		const onScroll = () => setShowTop(window.scrollY > 400);
@@ -1127,6 +1172,8 @@ export default function App() {
 			});
 		} catch {}
 	}
+
+	const torrentUrl = title => `https://bitsearch.eu/search?q=${encodeURIComponent(title)}`;
 
 	const listTitle = contributors.length === 0
 		? "My Watchlist"
@@ -1362,6 +1409,17 @@ export default function App() {
 										>
 											{movie.watched ? "✓ Watched" : "Mark as Watched"}
 										</button>
+										{torrentsEnabled && (
+											<a
+												className="card-torrent-btn"
+												href={torrentUrl(movie.Title)}
+												target="_blank"
+												rel="noopener noreferrer"
+												onClick={e => e.stopPropagation()}
+											>
+												Torrent
+											</a>
+										)}
 									</div>
 									<button
 										className="card-remove-btn"
@@ -1398,6 +1456,16 @@ export default function App() {
 									<button className="list-action-btn" onClick={() => toggleWatched(movie.imdbID)}>
 										{movie.watched ? "Unwatch" : "Watched"}
 									</button>
+									{torrentsEnabled && (
+										<a
+											className="list-action-btn"
+											href={torrentUrl(movie.Title)}
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											Torrent
+										</a>
+									)}
 									<button className="list-action-btn remove" onClick={() => setConfirmRemove(movie)}>Remove</button>
 								</div>
 							</div>
@@ -1436,6 +1504,16 @@ export default function App() {
 									>
 										{modal.watched ? "✓ Watched" : "Mark as Watched"}
 									</button>
+									{torrentsEnabled && (
+										<a
+											className="modal-torrent-btn"
+											href={torrentUrl(modal.Title)}
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											Torrent
+										</a>
+									)}
 									<button
 										style={{ background: "transparent", border: "1px solid #333", color: "#888", fontFamily: "'DM Sans',sans-serif", fontSize: "13px", padding: "10px 22px", borderRadius: "3px", cursor: "pointer" }}
 										onClick={() => setConfirmRemove(modal)}
