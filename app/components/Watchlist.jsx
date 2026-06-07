@@ -850,6 +850,39 @@ const style = `
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* SKELETON LOADER */
+  @keyframes shimmer {
+    0% { background-position: -600px 0; }
+    100% { background-position: 600px 0; }
+  }
+
+  .skeleton-poster {
+    aspect-ratio: 2/3;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    background: linear-gradient(90deg, #1a1a1e 25%, #222228 50%, #1a1a1e 75%);
+    background-size: 600px 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  .skeleton-title {
+    height: 14px;
+    border-radius: 2px;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, #1a1a1e 25%, #222228 50%, #1a1a1e 75%);
+    background-size: 600px 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  .skeleton-year {
+    height: 11px;
+    width: 40%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #1a1a1e 25%, #222228 50%, #1a1a1e 75%);
+    background-size: 600px 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
   /* SCROLLBAR */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: #111; }
@@ -1377,11 +1410,14 @@ export default function App() {
 
 				{/* Grid / List */}
 				{loading ? (
-					<div className="empty">
-						<div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
-							<span className="spinner" style={{ width: "28px", height: "28px" }} />
-						</div>
-						<div className="empty-title" style={{ fontSize: "16px" }}>Loading your watchlist…</div>
+					<div className="grid">
+						{Array.from({ length: 15 }).map((_, i) => (
+							<div key={i}>
+								<div className="skeleton-poster" />
+								<div className="skeleton-title" style={{ width: `${60 + (i * 17) % 35}%` }} />
+								<div className="skeleton-year" />
+							</div>
+						))}
 					</div>
 				) : filtered.length === 0 ? (
 					<div className="empty">
