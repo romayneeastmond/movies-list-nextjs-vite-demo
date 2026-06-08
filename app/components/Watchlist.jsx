@@ -1224,7 +1224,7 @@ export default function App() {
 	const [viewMode, setViewMode] = useState("grid"); // "grid" | "list"
 	const [showTop, setShowTop] = useState(false);
 	const [torrentsEnabled, setTorrentsEnabled] = useState(false);
-	const [addedBy, setAddedBy] = useState("");
+	const [addedBy, setAddedBy] = useState(() => lsGet("addedBy", ""));
 	const [filterPerson, setFilterPerson] = useState("");
 	const [editingAddedBy, setEditingAddedBy] = useState(false);
 
@@ -1494,7 +1494,7 @@ export default function App() {
 						<select
 							className="adding-as-select"
 							value={addedBy}
-							onChange={e => setAddedBy(e.target.value)}
+							onChange={e => { setAddedBy(e.target.value); lsSet("addedBy", e.target.value); }}
 						>
 							<option value="">—</option>
 							{contributors.map(name => (
