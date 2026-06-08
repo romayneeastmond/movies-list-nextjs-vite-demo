@@ -400,6 +400,42 @@ const style = `
     border-radius: 2px;
   }
 
+  .card-type-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(30, 80, 140, 0.85);
+    color: #7eb8f7;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    border-radius: 2px;
+    pointer-events: none;
+  }
+
+  .list-type-badge {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #7eb8f7;
+    background: rgba(30, 80, 140, 0.5);
+    border: 1px solid #2a3a5c;
+    padding: 2px 6px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .result-type-badge {
+    font-size: 10px;
+    color: #7eb8f7;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-right: 4px;
+  }
+
   .card-info { }
 
   .card-title {
@@ -1235,6 +1271,7 @@ export default function App() {
 	const [searching, setSearching] = useState(false);
 	const [watchlist, setWatchlist] = useState([]);
 	const [filter, setFilter] = useState("all");
+	const [mediaFilter, setMediaFilter] = useState("all"); // "all" | "movies" | "tv"
 	const [modal, setModal] = useState(null);
 	const [settingsOpen, setSettingsOpen] = useState(false);
 	const [contributors, setContributors] = useState([]);
@@ -1421,6 +1458,8 @@ export default function App() {
 		if (filter === "watched" && !m.watched) return false;
 		if (filter === "unwatched" && m.watched) return false;
 		if (filterPerson && m.AddedBy !== filterPerson) return false;
+		if (mediaFilter === "movies" && m._type === "tv") return false;
+		if (mediaFilter === "tv" && m._type !== "tv") return false;
 		return true;
 	});
 
@@ -1454,7 +1493,7 @@ export default function App() {
 						</h1>
 					</div>
 					<div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-						<div className="header-meta">{counts.all} films · {counts.watched} watched</div>
+						<div className="header-meta">{counts.all} titles · {counts.watched} watched</div>
 						<button className="settings-btn" onClick={() => setSettingsOpen(true)} title="Settings" aria-label="Settings">
 							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
 								<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -1469,7 +1508,7 @@ export default function App() {
 						<input
 							className="search-input"
 							type="text"
-							placeholder="Search for a movie to add…"
+							placeholder="Search for a movie or TV show to add…"
 							value={query}
 							onChange={e => setQuery(e.target.value)}
 							onKeyDown={e => {
@@ -1494,6 +1533,7 @@ export default function App() {
 												<div className="result-title">{r.Title}</div>
 												<div className="result-year">{r.Year}</div>
 											</div>
+											{r._type === "tv" && <span className="result-type-badge">TV</span>}
 											<span className="result-add">
 												{watchlist.find(m => m.imdbID === r.imdbID) ? "Added ✓" : "+ Add"}
 											</span>
@@ -1528,6 +1568,17 @@ export default function App() {
 				{/* Filters */}
 				{watchlist.length > 0 && (
 					<div className="filters">
+						<div className="filters-row">
+							{[["all", "All"], ["movies", "Movies"], ["tv", "TV Shows"]].map(([val, label]) => (
+								<button
+									key={val}
+									className={`filter-btn ${mediaFilter === val ? "active" : ""}`}
+									onClick={() => setMediaFilter(val)}
+								>
+									{label}
+								</button>
+							))}
+						</div>
 						<div className="filters-row">
 							{["all", "unwatched", "watched"].map(f => (
 								<button
@@ -1580,7 +1631,7 @@ export default function App() {
 					<div className="empty">
 						<div className="empty-icon">🎬</div>
 						<div className="empty-title">{watchlist.length === 0 ? "Your watchlist is empty" : "Nothing here yet"}</div>
-						<div className="empty-sub">{watchlist.length === 0 ? "Search for a film above to get started" : "Try a different filter"}</div>
+						<div className="empty-sub">{watchlist.length === 0 ? "Search for a movie or TV show above to get started" : "Try a different filter"}</div>
 					</div>
 				) : viewMode === "grid" ? (
 					<div className="grid">
@@ -1622,7 +1673,7 @@ export default function App() {
 								</div>
 								<div className="card-info">
 									<div className="card-title">{movie.Title}</div>
-									<div className="card-year">{movie.Year}</div>
+									<div className="card-year">{movie.Year}{movie._type === "tv" ? " · TV" : ""}</div>
 									{movie.AddedBy && <div className="card-added-by">{movie.AddedBy}</div>}
 								</div>
 							</div>
@@ -1640,6 +1691,7 @@ export default function App() {
 								}
 								<div className="list-title-col">
 									<div className="list-title">{movie.Title}</div>
+									{movie._type === "tv" && <div className="list-type-badge">TV</div>}
 									{movie.watched && <div className="list-watched-badge">Watched</div>}
 								</div>
 								<div className="list-year">{movie.Year}</div>
@@ -1683,7 +1735,7 @@ export default function App() {
 									<div className="modal-genre">{modal.Genre}</div>
 								)}
 								<div className="modal-title">{modal.Title}</div>
-								<div className="modal-meta">{modal.Year}{modal.Runtime && modal.Runtime !== "N/A" ? ` · ${modal.Runtime}` : ""}{modal.Director && modal.Director !== "N/A" ? ` · Dir. ${modal.Director}` : ""}</div>
+								<div className="modal-meta">{modal.Year}{modal.Runtime && modal.Runtime !== "N/A" ? ` · ${modal.Runtime}` : ""}{modal.Director && modal.Director !== "N/A" ? ` · ${modal._type === "tv" ? "Created by" : "Dir."} ${modal.Director}` : ""}</div>
 								{modal.imdbRating && modal.imdbRating !== "N/A" && (
 									<div className="modal-rating">
 										★ {modal.imdbRating} <span style={{ color: "#444", fontSize: "11px" }}>IMDb</span>
@@ -1765,7 +1817,7 @@ export default function App() {
 			{confirmRemove && (
 				<div className="confirm-bg" onClick={() => setConfirmRemove(null)}>
 					<div className="confirm-box" onClick={e => e.stopPropagation()}>
-						<div className="confirm-title">Remove film?</div>
+						<div className="confirm-title">Remove title?</div>
 						<div className="confirm-sub">
 							<em>{confirmRemove.Title}</em> will be removed from your watchlist.
 						</div>

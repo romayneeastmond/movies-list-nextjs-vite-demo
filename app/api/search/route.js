@@ -7,23 +7,34 @@ export async function GET(request) {
   const q = searchParams.get("q")?.trim();
   if (!q) return Response.json({ results: [] });
 
-  // Try OMDB first
-  const omdbRes = await fetch(
-    `https://www.omdbapi.com/?s=${encodeURIComponent(q)}&type=movie&apikey=${OMDB_KEY}`
-  );
-  const omdbData = await omdbRes.json();
+  const enc = encodeURIComponent(q);
+
+  // Search OMDB movies and TMDB TV shows in parallel
+  const [omdbRes, tmdbTVRes] = await Promise.all([
+    fetch(`https://www.omdbapi.com/?s=${enc}&type=movie&apikey=${OMDB_KEY}`),
+    fetch(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_KEY}&query=${enc}&include_adult=false`),
+  ]);
+  const [omdbData, tmdbTVData] = await Promise.all([omdbRes.json(), tmdbTVRes.json()]);
+
+  const tvResults = (tmdbTVData.results || []).slice(0, 4).map((s) => ({
+    imdbID: `tvdb-${s.id}`,
+    Title: s.name,
+    Year: s.first_air_date?.slice(0, 4) || "N/A",
+    Poster: s.poster_path ? `${TMDB_IMG}${s.poster_path}` : "N/A",
+    _type: "tv",
+  }));
 
   if (omdbData.Search?.length) {
-    return Response.json({ results: omdbData.Search });
+    return Response.json({ results: [...omdbData.Search, ...tvResults] });
   }
 
-  // Fall back to TMDB
-  const tmdbRes = await fetch(
-    `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}&include_adult=false`
+  // Fall back to TMDB movies
+  const tmdbMovieRes = await fetch(
+    `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${enc}&include_adult=false`
   );
-  const tmdbData = await tmdbRes.json();
+  const tmdbMovieData = await tmdbMovieRes.json();
 
-  const results = (tmdbData.results || []).slice(0, 8).map((m) => ({
+  const movieResults = (tmdbMovieData.results || []).slice(0, 5).map((m) => ({
     imdbID: `tmdb-${m.id}`,
     Title: m.title,
     Year: m.release_date?.slice(0, 4) || "N/A",
@@ -31,5 +42,5 @@ export async function GET(request) {
     _source: "tmdb",
   }));
 
-  return Response.json({ results });
+  return Response.json({ results: [...movieResults, ...tvResults] });
 }

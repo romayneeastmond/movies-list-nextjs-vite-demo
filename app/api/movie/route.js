@@ -7,6 +7,35 @@ export async function GET(request) {
   const id = searchParams.get("id");
   if (!id) return Response.json({ error: "Missing id" }, { status: 400 });
 
+  if (id.startsWith("tvdb-")) {
+    const tmdbId = id.replace("tvdb-", "");
+    const [detailRes, creditsRes] = await Promise.all([
+      fetch(`https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${TMDB_KEY}`),
+      fetch(`https://api.themoviedb.org/3/tv/${tmdbId}/credits?api_key=${TMDB_KEY}`),
+    ]);
+    const detail = await detailRes.json();
+    const credits = await creditsRes.json();
+    const creator =
+      detail.created_by?.[0]?.name ||
+      credits.crew?.find((c) => c.job === "Executive Producer")?.name ||
+      "N/A";
+
+    return Response.json({
+      imdbID: id,
+      Title: detail.name,
+      Year: detail.first_air_date?.slice(0, 4) || "N/A",
+      Poster: detail.poster_path ? `${TMDB_IMG}${detail.poster_path}` : "N/A",
+      Genre: detail.genres?.map((g) => g.name).join(", ") || "N/A",
+      Runtime: detail.number_of_seasons
+        ? `${detail.number_of_seasons} Season${detail.number_of_seasons !== 1 ? "s" : ""}`
+        : "N/A",
+      Director: creator,
+      imdbRating: detail.vote_average ? detail.vote_average.toFixed(1) : "N/A",
+      Plot: detail.overview || "N/A",
+      _type: "tv",
+    });
+  }
+
   if (id.startsWith("tmdb-")) {
     const tmdbId = id.replace("tmdb-", "");
     const [detailRes, creditsRes] = await Promise.all([
