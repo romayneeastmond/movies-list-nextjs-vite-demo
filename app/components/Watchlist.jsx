@@ -204,6 +204,23 @@ const style = `
     gap: 8px;
     margin-bottom: 36px;
     flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filters-row {
+    display: contents;
+  }
+
+  @media (max-width: 600px) {
+    .filters {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .filters-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
   }
 
   .filter-btn {
@@ -994,6 +1011,10 @@ const style = `
     margin-left: auto;
   }
 
+  @media (max-width: 600px) {
+    .view-toggle { margin-left: 0; }
+  }
+
   .view-btn {
     background: transparent;
     border: 1px solid #2a2a2e;
@@ -1507,18 +1528,19 @@ export default function App() {
 				{/* Filters */}
 				{watchlist.length > 0 && (
 					<div className="filters">
-						{["all", "unwatched", "watched"].map(f => (
-							<button
-								key={f}
-								className={`filter-btn ${filter === f ? "active" : ""}`}
-								onClick={() => setFilter(f)}
-							>
-								{f === "all" ? `All (${counts.all})` : f === "watched" ? `Watched (${counts.watched})` : `To Watch (${counts.unwatched})`}
-							</button>
-						))}
+						<div className="filters-row">
+							{["all", "unwatched", "watched"].map(f => (
+								<button
+									key={f}
+									className={`filter-btn ${filter === f ? "active" : ""}`}
+									onClick={() => setFilter(f)}
+								>
+									{f === "all" ? `All (${counts.all})` : f === "watched" ? `Watched (${counts.watched})` : `To Watch (${counts.unwatched})`}
+								</button>
+							))}
+						</div>
 						{contributors.length > 0 && (
-							<>
-								<span style={{ width: "1px", background: "#222", alignSelf: "stretch", margin: "0 4px" }} />
+							<div className="filters-row">
 								{contributors.map(name => (
 									<button
 										key={name}
@@ -1528,15 +1550,17 @@ export default function App() {
 										{name}
 									</button>
 								))}
-							</>
+							</div>
 						)}
-						<div className="view-toggle">
-							<button className={`view-btn ${viewMode === "grid" ? "active" : ""}`} onClick={() => setViewMode("grid")} title="Grid view" aria-label="Grid view">
-								<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="0" y="0" width="6" height="6" rx="1"/><rect x="8" y="0" width="6" height="6" rx="1"/><rect x="0" y="8" width="6" height="6" rx="1"/><rect x="8" y="8" width="6" height="6" rx="1"/></svg>
-							</button>
-							<button className={`view-btn ${viewMode === "list" ? "active" : ""}`} onClick={() => setViewMode("list")} title="List view" aria-label="List view">
-								<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="0" y="1" width="14" height="2" rx="1"/><rect x="0" y="6" width="14" height="2" rx="1"/><rect x="0" y="11" width="14" height="2" rx="1"/></svg>
-							</button>
+						<div className="filters-row">
+							<div className="view-toggle">
+								<button className={`view-btn ${viewMode === "grid" ? "active" : ""}`} onClick={() => setViewMode("grid")} title="Grid view" aria-label="Grid view">
+									<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="0" y="0" width="6" height="6" rx="1"/><rect x="8" y="0" width="6" height="6" rx="1"/><rect x="0" y="8" width="6" height="6" rx="1"/><rect x="8" y="8" width="6" height="6" rx="1"/></svg>
+								</button>
+								<button className={`view-btn ${viewMode === "list" ? "active" : ""}`} onClick={() => setViewMode("list")} title="List view" aria-label="List view">
+									<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="0" y="1" width="14" height="2" rx="1"/><rect x="0" y="6" width="14" height="2" rx="1"/><rect x="0" y="11" width="14" height="2" rx="1"/></svg>
+								</button>
+							</div>
 						</div>
 					</div>
 				)}
