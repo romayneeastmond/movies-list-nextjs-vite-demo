@@ -883,6 +883,104 @@ const style = `
     animation: shimmer 1.4s ease-in-out infinite;
   }
 
+  /* ADDED BY */
+  .card-added-by {
+    font-size: 11px;
+    color: #666;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .list-added-by {
+    font-size: 11px;
+    color: #666;
+    flex-shrink: 0;
+    width: 80px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .modal-added-by {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .modal-added-by-edit {
+    background: transparent;
+    border: 1px solid #2a2a2e;
+    color: #888;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .modal-added-by-edit:hover { color: #c9a84c; border-color: #c9a84c; }
+
+  .modal-added-by-select {
+    background: #161618;
+    border: 1px solid #c9a84c;
+    color: #e8e2d5;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .modal-added-by-save {
+    background: #c9a84c;
+    border: none;
+    color: #0d0d0f;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+
+  .adding-as-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 56px;
+    margin-top: -44px;
+  }
+
+  .adding-as-label {
+    font-size: 12px;
+    color: #555;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .adding-as-select {
+    background: #161618;
+    border: 1px solid #2a2a2e;
+    color: #e8e2d5;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .adding-as-select:focus { border-color: #c9a84c; }
+
   /* SCROLLBAR */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: #111; }
@@ -1126,6 +1224,9 @@ export default function App() {
 	const [viewMode, setViewMode] = useState("grid"); // "grid" | "list"
 	const [showTop, setShowTop] = useState(false);
 	const [torrentsEnabled, setTorrentsEnabled] = useState(false);
+	const [addedBy, setAddedBy] = useState("");
+	const [filterPerson, setFilterPerson] = useState("");
+	const [editingAddedBy, setEditingAddedBy] = useState(false);
 
 	useEffect(() => { setMounted(true); }, []);
 
@@ -1243,7 +1344,7 @@ export default function App() {
 			const res = await fetch(`/api/movie?id=${encodeURIComponent(id)}`);
 			const data = await res.json();
 			if (!data.error) {
-				const movie = { ...data, watched: false };
+				const movie = { ...data, watched: false, AddedBy: addedBy };
 				const next = [movie, ...watchlist];
 				setWatchlist(next);
 				lsSet("watchlist", next);
@@ -1296,8 +1397,9 @@ export default function App() {
 	}
 
 	const filtered = watchlist.filter(m => {
-		if (filter === "watched") return m.watched;
-		if (filter === "unwatched") return !m.watched;
+		if (filter === "watched" && !m.watched) return false;
+		if (filter === "unwatched" && m.watched) return false;
+		if (filterPerson && m.AddedBy !== filterPerson) return false;
 		return true;
 	});
 
@@ -1385,6 +1487,23 @@ export default function App() {
 					</button>
 				</div>
 
+				{/* Adding as selector */}
+				{contributors.length > 0 && (
+					<div className="adding-as-wrap">
+						<span className="adding-as-label">Adding as:</span>
+						<select
+							className="adding-as-select"
+							value={addedBy}
+							onChange={e => setAddedBy(e.target.value)}
+						>
+							<option value="">—</option>
+							{contributors.map(name => (
+								<option key={name} value={name}>{name}</option>
+							))}
+						</select>
+					</div>
+				)}
+
 				{/* Filters */}
 				{watchlist.length > 0 && (
 					<div className="filters">
@@ -1397,6 +1516,20 @@ export default function App() {
 								{f === "all" ? `All (${counts.all})` : f === "watched" ? `Watched (${counts.watched})` : `To Watch (${counts.unwatched})`}
 							</button>
 						))}
+						{contributors.length > 0 && (
+							<>
+								<span style={{ width: "1px", background: "#222", alignSelf: "stretch", margin: "0 4px" }} />
+								{contributors.map(name => (
+									<button
+										key={name}
+										className={`filter-btn ${filterPerson === name ? "active" : ""}`}
+										onClick={() => setFilterPerson(filterPerson === name ? "" : name)}
+									>
+										{name}
+									</button>
+								))}
+							</>
+						)}
 						<div className="view-toggle">
 							<button className={`view-btn ${viewMode === "grid" ? "active" : ""}`} onClick={() => setViewMode("grid")} title="Grid view" aria-label="Grid view">
 								<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="0" y="0" width="6" height="6" rx="1"/><rect x="8" y="0" width="6" height="6" rx="1"/><rect x="0" y="8" width="6" height="6" rx="1"/><rect x="8" y="8" width="6" height="6" rx="1"/></svg>
@@ -1466,6 +1599,7 @@ export default function App() {
 								<div className="card-info">
 									<div className="card-title">{movie.Title}</div>
 									<div className="card-year">{movie.Year}</div>
+									{movie.AddedBy && <div className="card-added-by">{movie.AddedBy}</div>}
 								</div>
 							</div>
 						))}
@@ -1488,6 +1622,7 @@ export default function App() {
 								<div className="list-rating">
 									{movie.imdbRating && movie.imdbRating !== "N/A" ? `★ ${movie.imdbRating}` : " "}
 								</div>
+								<div className="list-added-by">{movie.AddedBy || ""}</div>
 								<div className="list-actions" onClick={e => e.stopPropagation()}>
 									<button className="list-action-btn" onClick={() => toggleWatched(movie.imdbID)}>
 										{movie.watched ? "Unwatch" : "Watched"}
@@ -1511,7 +1646,7 @@ export default function App() {
 
 				{/* Modal */}
 				{modal && (
-					<div className="modal-bg" onClick={() => setModal(null)}>
+					<div className="modal-bg" onClick={() => { setModal(null); setEditingAddedBy(false); }}>
 						<div className="modal" onClick={e => e.stopPropagation()}>
 							{modal.Poster && modal.Poster !== "N/A"
 								? <img className="modal-poster" src={modal.Poster} alt={modal.Title} />
@@ -1530,6 +1665,37 @@ export default function App() {
 										★ {modal.imdbRating} <span style={{ color: "#444", fontSize: "11px" }}>IMDb</span>
 									</div>
 								)}
+								<div className="modal-added-by">
+									{editingAddedBy ? (
+										<>
+											<span style={{color:'#555'}}>Added by:</span>
+											<select
+												className="modal-added-by-select"
+												defaultValue={modal.AddedBy || ""}
+												id="modal-addedby-select"
+												autoFocus
+											>
+												<option value="">—</option>
+												{contributors.map(n => <option key={n} value={n}>{n}</option>)}
+											</select>
+											<button className="modal-added-by-save" onClick={async () => {
+												const val = document.getElementById("modal-addedby-select").value;
+												const updated = {...modal, AddedBy: val};
+												setModal(updated);
+												setWatchlist(prev => prev.map(m => m.imdbID === modal.imdbID ? {...m, AddedBy: val} : m));
+												setEditingAddedBy(false);
+												try { await fetch("/api/watchlist", { method: "PATCH", headers: {"Content-Type":"application/json"}, body: JSON.stringify({imdbID: modal.imdbID, AddedBy: val}) }); } catch {}
+											}}>Save</button>
+											<button className="modal-added-by-edit" onClick={() => setEditingAddedBy(false)}>Cancel</button>
+										</>
+									) : (
+										<>
+											<span style={{color:'#555'}}>Added by:</span>
+											<span style={{color: modal.AddedBy ? '#e8e2d5' : '#444'}}>{modal.AddedBy || '—'}</span>
+											<button className="modal-added-by-edit" onClick={() => setEditingAddedBy(true)}>Edit</button>
+										</>
+									)}
+								</div>
 								<p className="modal-synopsis">
 									{modal.Plot && modal.Plot !== "N/A" ? modal.Plot : "No synopsis available."}
 								</p>
@@ -1558,7 +1724,7 @@ export default function App() {
 									</button>
 								</div>
 							</div>
-							<button className="modal-close" onClick={() => setModal(null)}>×</button>
+							<button className="modal-close" onClick={() => { setModal(null); setEditingAddedBy(false); }}>×</button>
 						</div>
 					</div>
 				)}
