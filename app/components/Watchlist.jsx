@@ -251,16 +251,19 @@ const style = `
   }
 
   .manual-select {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 4px;
-    color: #e8dcc8;
-    padding: 7px 10px;
+    background: #161618;
+    border: 1px solid #2a2a2e;
+    color: #e8e2d5;
+    font-family: 'DM Sans', sans-serif;
     font-size: 13px;
-    flex: 1;
+    padding: 6px 12px;
+    border-radius: 4px;
     outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    flex: 1;
   }
-  .manual-select:focus { border-color: rgba(201,168,76,0.5); }
+  .manual-select:focus { border-color: #c9a84c; }
 
   .manual-form-actions {
     display: flex;
