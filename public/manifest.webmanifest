@@ -1,0 +1,17 @@
+{
+  "name": "My Watchlist",
+  "short_name": "Watchlist",
+  "description": "Track movies you want to watch",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0d0f",
+  "theme_color": "#c9a84c",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
