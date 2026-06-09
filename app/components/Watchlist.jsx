@@ -198,6 +198,100 @@ const style = `
     flex-shrink: 0;
   }
 
+  .add-manually-btn {
+    background: none;
+    border: 1px solid #c9a84c;
+    color: #c9a84c;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .add-manually-btn:hover { background: rgba(201,168,76,0.1); }
+
+  .manual-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    background: #1a1a1e;
+    border: 1px solid #2a2a2e;
+    border-radius: 4px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.7);
+  }
+
+  .manual-form-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #c9a84c;
+    margin-bottom: 2px;
+  }
+
+  .manual-input {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 4px;
+    color: #e8dcc8;
+    padding: 7px 10px;
+    font-size: 13px;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+  }
+  .manual-input:focus { border-color: rgba(201,168,76,0.5); }
+  .manual-input-sm { flex: 1; }
+  .manual-textarea { resize: vertical; min-height: 72px; font-family: inherit; line-height: 1.5; }
+
+  .manual-form-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .manual-select {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 4px;
+    color: #e8dcc8;
+    padding: 7px 10px;
+    font-size: 13px;
+    flex: 1;
+    outline: none;
+  }
+  .manual-select:focus { border-color: rgba(201,168,76,0.5); }
+
+  .manual-form-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .manual-cancel-btn {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #888;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .manual-cancel-btn:hover { border-color: rgba(255,255,255,0.4); color: #bbb; }
+
+  .manual-save-btn {
+    background: rgba(201,168,76,0.15);
+    border: 1px solid #c9a84c;
+    color: #c9a84c;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+  }
+  .manual-save-btn:hover:not(:disabled) { background: rgba(201,168,76,0.25); }
+  .manual-save-btn:disabled { opacity: 0.4; cursor: default; }
+
   /* FILTERS */
   .filters {
     display: flex;
@@ -1269,6 +1363,7 @@ export default function App() {
 	const [query, setQuery] = useState("");
 	const [searchResults, setSearchResults] = useState([]);
 	const [searching, setSearching] = useState(false);
+	const [manualForm, setManualForm] = useState(null); // null | { title, year, type, poster }
 	const [watchlist, setWatchlist] = useState([]);
 	const [filter, setFilter] = useState("all");
 	const [mediaFilter, setMediaFilter] = useState("all"); // "all" | "movies" | "tv"
@@ -1390,6 +1485,38 @@ export default function App() {
 			setSearchResults(data.results || []);
 		} catch { setSearchResults([]); }
 		setSearching(false);
+	}
+
+	async function addManualEntry(form) {
+		const id = `manual-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+		const movie = {
+			imdbID: id,
+			Title: form.title.trim(),
+			Year: form.year.trim() || "N/A",
+			Type: form.type,
+			Poster: form.poster.trim() || "N/A",
+			Plot: form.plot.trim() || "N/A",
+			Genre: "N/A",
+			Director: "N/A",
+			Actors: "N/A",
+			imdbRating: "N/A",
+			watched: false,
+			AddedBy: addedBy,
+			_manual: true,
+		};
+		const next = [movie, ...watchlist];
+		setWatchlist(next);
+		lsSet("watchlist", next);
+		try {
+			await fetch("/api/watchlist", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(movie),
+			});
+		} catch {}
+		setManualForm(null);
+		setSearchResults([]);
+		setQuery("");
 	}
 
 	async function addMovie(id) {
@@ -1517,7 +1644,7 @@ export default function App() {
 							}}
 						/>
 						{(query || searchResults.length > 0) && (
-							<button className="search-clear" onClick={() => { setQuery(""); setSearchResults([]); }} aria-label="Clear search">×</button>
+							<button className="search-clear" onClick={() => { setQuery(""); setSearchResults([]); setManualForm(null); }} aria-label="Clear search">×</button>
 						)}
 						{searchResults.length > 0 && (
 							<div className="search-results">
@@ -1542,9 +1669,63 @@ export default function App() {
 								</div>
 							</div>
 						)}
+						{manualForm && (
+							<div className="search-results">
+								<div className="manual-form">
+									<div className="manual-form-title">Add manually</div>
+									<input
+										className="manual-input"
+										placeholder="Title *"
+										value={manualForm.title}
+										onChange={e => setManualForm(f => ({ ...f, title: e.target.value }))}
+									/>
+									<div className="manual-form-row">
+										<input
+											className="manual-input manual-input-sm"
+											placeholder="Year"
+											value={manualForm.year}
+											onChange={e => setManualForm(f => ({ ...f, year: e.target.value }))}
+										/>
+										<select
+											className="manual-select"
+											value={manualForm.type}
+											onChange={e => setManualForm(f => ({ ...f, type: e.target.value }))}
+										>
+											<option value="movie">Movie</option>
+											<option value="series">TV Series</option>
+										</select>
+									</div>
+									<input
+										className="manual-input"
+										placeholder="Poster URL (optional)"
+										value={manualForm.poster}
+										onChange={e => setManualForm(f => ({ ...f, poster: e.target.value }))}
+									/>
+									<textarea
+										className="manual-input manual-textarea"
+										placeholder="Synopsis (optional)"
+										value={manualForm.plot}
+										onChange={e => setManualForm(f => ({ ...f, plot: e.target.value }))}
+									/>
+									<div className="manual-form-actions">
+										<button className="manual-cancel-btn" onClick={() => setManualForm(null)}>Cancel</button>
+										<button
+											className="manual-save-btn"
+											disabled={!manualForm.title.trim()}
+											onClick={() => addManualEntry(manualForm)}
+										>
+											Add to Watchlist
+										</button>
+									</div>
+								</div>
+							</div>
+						)}
 					</div>
 					<button className="search-btn" onClick={() => doSearch(query)} disabled={searching}>
 						{searching ? <span className="spinner" /> : "Search"}
+					</button>
+					<button className="add-manually-btn" onClick={() => { setManualForm({ title: query.trim(), year: "", type: "movie", poster: "", plot: "" }); setSearchResults([]); }}>
+						+ Manual
 					</button>
 				</div>
 
