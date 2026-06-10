@@ -402,24 +402,37 @@ const style = `
     margin-right: 2px;
   }
 
-  /* FILTERS — mobile: stacked rows, no dividers */
-  @media (max-width: 600px) {
+  /* FILTERS — tablet/mobile: stacked rows, no dividers */
+  @media (max-width: 900px) {
     .filters {
       flex-direction: column;
-      gap: 10px;
+      align-items: flex-start;
+      gap: 8px;
     }
     .filters-row {
       padding: 0;
+      width: 100%;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .filters-row:first-child {
+      padding-left: 0;
     }
     .filters-row--end {
       margin-left: 0;
+      justify-content: flex-start;
     }
     .filter-divider {
       display: none;
     }
     .filter-label {
       width: 52px;
+      margin-right: 0;
     }
+  }
+
+  @media (max-width: 600px) {
+    .filter-label { display: none; }
   }
 
   .filter-btn {
