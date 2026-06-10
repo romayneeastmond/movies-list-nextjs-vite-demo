@@ -359,21 +359,38 @@ const style = `
   }
 
   .filters-panel-body.open .filters-panel-body-inner {
-    padding: 14px 16px 16px;
+    padding: 10px 16px 12px;
   }
 
-  /* FILTERS */
+  /* FILTERS — desktop: single row with dividers */
   .filters {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0;
   }
 
   .filters-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    padding: 0 12px;
     flex-wrap: wrap;
+  }
+
+  .filters-row:first-child { padding-left: 0; }
+
+  .filters-row--end {
+    margin-left: auto;
+    padding-right: 0;
+  }
+
+  .filter-divider {
+    width: 1px;
+    height: 18px;
+    background: #2a2a2e;
+    flex-shrink: 0;
   }
 
   .filter-label {
@@ -381,8 +398,28 @@ const style = `
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: #444;
-    width: 52px;
     flex-shrink: 0;
+    margin-right: 2px;
+  }
+
+  /* FILTERS — mobile: stacked rows, no dividers */
+  @media (max-width: 600px) {
+    .filters {
+      flex-direction: column;
+      gap: 10px;
+    }
+    .filters-row {
+      padding: 0;
+    }
+    .filters-row--end {
+      margin-left: 0;
+    }
+    .filter-divider {
+      display: none;
+    }
+    .filter-label {
+      width: 52px;
+    }
   }
 
   .filter-btn {
@@ -1846,6 +1883,7 @@ export default function App() {
 								</button>
 							))}
 						</div>
+						<div className="filter-divider" />
 						<div className="filters-row">
 							<span className="filter-label">Status</span>
 							{["all", "unwatched", "watched"].map(f => (
@@ -1859,20 +1897,23 @@ export default function App() {
 							))}
 						</div>
 						{contributors.length > 0 && (
-							<div className="filters-row">
-								<span className="filter-label">By</span>
-								{contributors.map(name => (
-									<button
-										key={name}
-										className={`filter-btn ${filterPerson === name ? "active" : ""}`}
-										onClick={() => setFilterPerson(filterPerson === name ? "" : name)}
-									>
-										{name}
-									</button>
-								))}
-							</div>
+							<>
+								<div className="filter-divider" />
+								<div className="filters-row">
+									<span className="filter-label">By</span>
+									{contributors.map(name => (
+										<button
+											key={name}
+											className={`filter-btn ${filterPerson === name ? "active" : ""}`}
+											onClick={() => setFilterPerson(filterPerson === name ? "" : name)}
+										>
+											{name}
+										</button>
+									))}
+								</div>
+							</>
 						)}
-						<div className="filters-row">
+						<div className="filters-row filters-row--end">
 							<div className="view-toggle">
 								<button className={`view-btn ${viewMode === "grid" ? "active" : ""}`} onClick={() => setViewMode("grid")} title="Grid view" aria-label="Grid view">
 									<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="0" y="0" width="6" height="6" rx="1"/><rect x="8" y="0" width="6" height="6" rx="1"/><rect x="0" y="8" width="6" height="6" rx="1"/><rect x="8" y="8" width="6" height="6" rx="1"/></svg>
