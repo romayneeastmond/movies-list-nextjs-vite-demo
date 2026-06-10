@@ -295,29 +295,94 @@ const style = `
   .manual-save-btn:hover:not(:disabled) { background: rgba(201,168,76,0.25); }
   .manual-save-btn:disabled { opacity: 0.4; cursor: default; }
 
+  /* FILTERS PANEL */
+  .filters-panel {
+    margin-bottom: 36px;
+    border: 1px solid #1e1e22;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .filters-panel-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: #111113;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    gap: 12px;
+    text-align: left;
+  }
+
+  .filters-panel-toggle:hover { background: #161618; }
+
+  .filters-panel-toggle-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .filters-panel-toggle-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #555;
+  }
+
+  .filters-panel-summary {
+    font-size: 11px;
+    color: #444;
+    letter-spacing: 0.04em;
+  }
+
+  .filters-panel-chevron {
+    color: #444;
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+  }
+
+  .filters-panel-chevron.open { transform: rotate(180deg); }
+
+  .filters-panel-body {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.25s ease;
+  }
+
+  .filters-panel-body.closed { grid-template-rows: 0fr; }
+
+  .filters-panel-body-inner {
+    overflow: hidden;
+    padding: 0 16px;
+  }
+
+  .filters-panel-body.open .filters-panel-body-inner {
+    padding: 14px 16px 16px;
+  }
+
   /* FILTERS */
   .filters {
     display: flex;
-    gap: 8px;
-    margin-bottom: 36px;
-    flex-wrap: wrap;
-    align-items: center;
+    flex-direction: column;
+    gap: 10px;
   }
 
   .filters-row {
-    display: contents;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
-  @media (max-width: 600px) {
-    .filters {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    .filters-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+  .filter-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #444;
+    width: 52px;
+    flex-shrink: 0;
   }
 
   .filter-btn {
@@ -1144,10 +1209,6 @@ const style = `
     margin-left: auto;
   }
 
-  @media (max-width: 600px) {
-    .view-toggle { margin-left: 0; }
-  }
-
   .view-btn {
     background: transparent;
     border: 1px solid #2a2a2e;
@@ -1383,6 +1444,7 @@ export default function App() {
 	const [addedBy, setAddedBy] = useState(() => lsGet("addedBy", ""));
 	const [filterPerson, setFilterPerson] = useState("");
 	const [editingAddedBy, setEditingAddedBy] = useState(false);
+	const [filtersOpen, setFiltersOpen] = useState(true);
 
 	useEffect(() => { setMounted(true); }, []);
 
@@ -1751,8 +1813,29 @@ export default function App() {
 
 				{/* Filters */}
 				{watchlist.length > 0 && (
+				<div className="filters-panel">
+					<button className="filters-panel-toggle" onClick={() => setFiltersOpen(o => !o)}>
+						<div className="filters-panel-toggle-left">
+							<span className="filters-panel-toggle-label">Filters &amp; View</span>
+							{!filtersOpen && (
+								<span className="filters-panel-summary">
+									{[
+										mediaFilter !== "all" ? (mediaFilter === "movies" ? "Movies" : "TV Shows") : null,
+										filter === "unwatched" ? "To Watch" : filter === "watched" ? "Watched" : null,
+										filterPerson || null,
+									].filter(Boolean).join(" · ") || "None active"}
+								</span>
+							)}
+						</div>
+						<svg className={`filters-panel-chevron ${filtersOpen ? "open" : ""}`} width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+							<path d="M2 4l4 4 4-4"/>
+						</svg>
+					</button>
+					<div className={`filters-panel-body ${filtersOpen ? "open" : "closed"}`}>
+						<div className="filters-panel-body-inner">
 					<div className="filters">
 						<div className="filters-row">
+							<span className="filter-label">Type</span>
 							{[["all", "All"], ["movies", "Movies"], ["tv", "TV Shows"]].map(([val, label]) => (
 								<button
 									key={val}
@@ -1764,18 +1847,20 @@ export default function App() {
 							))}
 						</div>
 						<div className="filters-row">
+							<span className="filter-label">Status</span>
 							{["all", "unwatched", "watched"].map(f => (
 								<button
 									key={f}
 									className={`filter-btn ${filter === f ? "active" : ""}`}
 									onClick={() => setFilter(f)}
 								>
-									{f === "all" ? `All (${counts.all})` : f === "watched" ? `Watched (${counts.watched})` : `To Watch (${counts.unwatched})`}
+									{f === "all" ? "Any" : f === "watched" ? `Watched (${counts.watched})` : `To Watch (${counts.unwatched})`}
 								</button>
 							))}
 						</div>
 						{contributors.length > 0 && (
 							<div className="filters-row">
+								<span className="filter-label">By</span>
 								{contributors.map(name => (
 									<button
 										key={name}
@@ -1798,6 +1883,9 @@ export default function App() {
 							</div>
 						</div>
 					</div>
+					</div>
+				</div>
+				</div>
 				)}
 
 				{/* Grid / List */}
