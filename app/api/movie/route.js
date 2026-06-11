@@ -33,6 +33,7 @@ export async function GET(request) {
       imdbRating: detail.vote_average ? detail.vote_average.toFixed(1) : "N/A",
       Plot: detail.overview || "N/A",
       _type: "tv",
+      TotalSeasons: detail.number_of_seasons || 0,
     });
   }
 

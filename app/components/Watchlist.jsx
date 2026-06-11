@@ -664,6 +664,103 @@ const style = `
     color: #555;
   }
 
+  .card-progress {
+    font-size: 11px;
+    color: #7eb8f7;
+    margin-top: 3px;
+    letter-spacing: 0.04em;
+  }
+
+  /* TV PROGRESS in modal */
+  .progress-section {
+    background: #0f0f11;
+    border: 1px solid #1e1e22;
+    border-radius: 4px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
+
+  .progress-section-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #444;
+    margin-bottom: 10px;
+  }
+
+  .progress-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .progress-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .progress-group-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444;
+  }
+
+  .progress-stepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid #2a2a2e;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-step-btn {
+    background: #161618;
+    border: none;
+    color: #888;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .progress-step-btn:hover:not(:disabled) { background: #1e1e22; color: #c9a84c; }
+  .progress-step-btn:disabled { opacity: 0.3; cursor: default; }
+
+  .progress-step-val {
+    min-width: 36px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: #e8e2d5;
+    background: #111113;
+    padding: 0 6px;
+    height: 30px;
+    line-height: 30px;
+  }
+
+  .progress-total {
+    font-size: 11px;
+    color: #444;
+    align-self: flex-end;
+    padding-bottom: 6px;
+  }
+
+  .list-progress {
+    font-size: 11px;
+    color: #7eb8f7;
+    flex-shrink: 0;
+    width: 60px;
+  }
+
   /* MODAL */
   .modal-bg {
     position: fixed;
@@ -1686,6 +1783,21 @@ export default function App() {
 		} catch {}
 	}
 
+	async function updateProgress(imdbID, season, episode) {
+		const changes = { CurrentSeason: season, CurrentEpisode: episode };
+		const next = watchlist.map(m => m.imdbID === imdbID ? { ...m, ...changes } : m);
+		setWatchlist(next);
+		lsSet("watchlist", next);
+		if (modal?.imdbID === imdbID) setModal(prev => ({ ...prev, ...changes }));
+		try {
+			await fetch("/api/watchlist", {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ imdbID, ...changes }),
+			});
+		} catch {}
+	}
+
 	async function removeMovie(imdbID) {
 		const next = watchlist.filter(m => m.imdbID !== imdbID);
 		setWatchlist(next);
@@ -2000,6 +2112,9 @@ export default function App() {
 								<div className="card-info">
 									<div className="card-title">{movie.Title}</div>
 									<div className="card-year">{movie.Year}{movie._type === "tv" ? " · TV" : ""}</div>
+									{movie._type === "tv" && movie.CurrentEpisode > 0 && (
+										<div className="card-progress">S{movie.CurrentSeason} E{movie.CurrentEpisode}</div>
+									)}
 									{movie.AddedBy && <div className="card-added-by">{movie.AddedBy}</div>}
 								</div>
 							</div>
@@ -2024,6 +2139,10 @@ export default function App() {
 								<div className="list-rating">
 									{movie.imdbRating && movie.imdbRating !== "N/A" ? `★ ${movie.imdbRating}` : " "}
 								</div>
+								{movie._type === "tv"
+										? <div className="list-progress">{movie.CurrentEpisode > 0 ? `S${movie.CurrentSeason} E${movie.CurrentEpisode}` : "—"}</div>
+										: <div className="list-progress" />
+									}
 								<div className="list-added-by">{movie.AddedBy || ""}</div>
 								<div className="list-actions" onClick={e => e.stopPropagation()}>
 									<button className="list-action-btn" onClick={() => toggleWatched(movie.imdbID)}>
@@ -2098,6 +2217,32 @@ export default function App() {
 										</>
 									)}
 								</div>
+								{modal._type === "tv" && (
+									<div className="progress-section">
+										<div className="progress-section-label">Where I left off</div>
+										<div className="progress-controls">
+											<div className="progress-group">
+												<span className="progress-group-label">Season</span>
+												<div className="progress-stepper">
+													<button className="progress-step-btn" disabled={(modal.CurrentSeason || 1) <= 1} onClick={() => updateProgress(modal.imdbID, (modal.CurrentSeason || 1) - 1, modal.CurrentEpisode || 0)}>−</button>
+													<div className="progress-step-val">{modal.CurrentSeason || 1}</div>
+													<button className="progress-step-btn" disabled={modal.TotalSeasons > 0 && (modal.CurrentSeason || 1) >= modal.TotalSeasons} onClick={() => updateProgress(modal.imdbID, (modal.CurrentSeason || 1) + 1, modal.CurrentEpisode || 0)}>+</button>
+												</div>
+											</div>
+											<div className="progress-group">
+												<span className="progress-group-label">Episode</span>
+												<div className="progress-stepper">
+													<button className="progress-step-btn" disabled={(modal.CurrentEpisode || 0) <= 0} onClick={() => updateProgress(modal.imdbID, modal.CurrentSeason || 1, (modal.CurrentEpisode || 0) - 1)}>−</button>
+													<div className="progress-step-val">{modal.CurrentEpisode || 0}</div>
+													<button className="progress-step-btn" onClick={() => updateProgress(modal.imdbID, modal.CurrentSeason || 1, (modal.CurrentEpisode || 0) + 1)}>+</button>
+												</div>
+											</div>
+											{modal.TotalSeasons > 0 && (
+												<div className="progress-total">of {modal.TotalSeasons} season{modal.TotalSeasons !== 1 ? "s" : ""}</div>
+											)}
+										</div>
+									</div>
+								)}
 								<p className="modal-synopsis">
 									{modal.Plot && modal.Plot !== "N/A" ? modal.Plot : "No synopsis available."}
 								</p>
