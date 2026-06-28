@@ -1822,10 +1822,17 @@ export default function App() {
 		return a.Title.localeCompare(b.Title);
 	});
 
+	const baseFiltered = watchlist.filter(m => {
+		if (filterPerson && m.AddedBy !== filterPerson) return false;
+		if (mediaFilter === "movies" && m._type === "tv") return false;
+		if (mediaFilter === "tv" && m._type !== "tv") return false;
+		return true;
+	});
+
 	const counts = {
-		all: watchlist.length,
-		watched: watchlist.filter(m => m.watched).length,
-		unwatched: watchlist.filter(m => !m.watched).length,
+		all: baseFiltered.length,
+		watched: baseFiltered.filter(m => m.watched).length,
+		unwatched: baseFiltered.filter(m => !m.watched).length,
 	};
 
 	if (!mounted) return null;
